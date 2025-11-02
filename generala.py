@@ -12,7 +12,7 @@ planilla = {
     "Poker": None,
     "Penal!": None
 }
-caras={
+simbolos={
     1: "Palo",
     2: "Bocha",
     3: "Arco",
@@ -20,29 +20,6 @@ caras={
     5: "Cancha",
     6: "Arquero"
 }
-def tirar_dados(cantidad=5):
-    return [random.randint(1, 6) for _ in range(cantidad)]
-def mostrar_dados(dados):
-    print("\nDADOS ACTUALES")
-    print("Posición: ", end="")
-    for i in range(len(dados)):
-        print(f"({i+1})", end=" | ")
-    print()
-    print("Símbolo:  ", end="")
-    for d in dados:
-        print(f"{caras[d]}", end=" | ")
-    print()
-    print("Valor:    ", end="")
-    for d in dados:
-        print(f"{d}", end=" | ")
-    print("\n") 
-
-def seleccionar_dados_a_conservar():
-    eleccion = input("Ingrese las posiciones de los dados a conservar (ej: 1,3,5) o ENTER para ninguno: ")
-    if eleccion.strip() == "":
-        return []
-    else:
-        return [int(x) for x in eleccion.split(",") if x.strip().isdigit()]
 
 def turno_jugador():
     dados = tirar_dados()
@@ -50,27 +27,68 @@ def turno_jugador():
         print(f"\n<<< TIRO {tiro} de 3 >>>")
         mostrar_dados(dados)
 
-        if tiro < 3:  # Solo pedir conservar si no es el último tiro
+        if tiro < 3:
             conservar = seleccionar_dados_a_conservar()
             nuevos = tirar_dados(5 - len(conservar))
-            # Reemplazar solo los que no se conservaron
             dados = [dados[i] if (i+1) in conservar else nuevos.pop(0) for i in range(5)]
     return dados
+#Un turno completo, llama tirar_dados para el primer tiro, mostrar_dados los muestra en pantalla, llama a conservar dados y tira los dados no conservados hasta 3 tiros.
+
+def tirar_dados(cantidad=5):
+    return [random.randint(1, 6) for _ in range(cantidad)]
+#Genera 5 dados aleatorios entre 1 y 6.
+
+def mostrar_dados(dados):
+    print("\nDADOS ACTUALES")
+    print("Posición: ", end="")
+    for i in range(len(dados)):
+        print(f"({i+1})", end=" | ")
+    print()
+    print("Símbolo:  ", end="")
+    for d in dados: #for dado in dados
+        print(f"{simbolos[d]}", end=" | ")
+    print()
+    print("Valor:    ", end="")
+    for d in dados:
+        print(f"{d}", end=" | ")
+    print("\n") 
+#Muestra los dados actuales con su posición, símbolo (tematica) y valor(numero real).
+
+def seleccionar_dados_a_conservar():
+    eleccion = input("Ingrese las posiciones de los dados a conservar (ej: 1,3,5) o ENTER para ninguno: ")
+    if eleccion.strip() == "":
+        return []
+    numeros = []
+    numero_actual = ""
+    for n in eleccion:
+        if n.isdigit():
+            numero_actual += n
+        elif n == ",":
+            if numero_actual:
+                numeros.append(int(numero_actual))
+                numero_actual = ""
+    if numero_actual:
+        numeros.append(int(numero_actual))
+    return numeros
+#Selecciona los dados conservados por el jugador, devuelve una lista con las posiciones de los dados a conservar.
 
 def es_escalera(dados):
     ordenados = copy.deepcopy(dados)
     ordenados.sort()
     return ordenados == [1, 2, 3, 4, 5] or ordenados == [2, 3, 4, 5, 6]
+#Crea una copia de los dados, los ordena y verifica si son una escalera.
 
 def es_full(dados):
     ordenados = copy.deepcopy(dados)
     ordenados.sort()
     return (ordenados[0] == ordenados[1] == ordenados[2] and ordenados[3] == ordenados[4]) or (ordenados[0] == ordenados[1] and ordenados[2] == ordenados[3] == ordenados[4])
+#Crea una copia de los dados, los ordena y verifica si son un full.
 
 def es_poker(dados):
     ordenados = copy.deepcopy(dados)
     ordenados.sort()
     return ordenados[0] == ordenados[1] == ordenados[2] == ordenados[3] or ordenados[1] == ordenados[2] == ordenados[3] == ordenados[4]
+#crea una copia de los dados, los ordena y verifica si son un poker.
 
 def es_generala(dados):
     dado=dados[0]
@@ -78,6 +96,7 @@ def es_generala(dados):
         if d!=dado:
             return False
     return True
+#Verifica si todos los dados son iguales(generala).
 
 def calcular_jugadas(dados):
     jugadas = {}
@@ -98,6 +117,7 @@ def calcular_jugadas(dados):
     else:
         jugadas["Penal!"] = 0 
     return jugadas
+#LLama a las funciones de cada jugada y crea un diccionario que devuelve las jugadas con sus puntos.
 
 def anotacion(dados, planilla):
     print("Opciones disponibles para anotar:")
@@ -113,6 +133,7 @@ def anotacion(dados, planilla):
                     if d == numero:
                         puntos += d
             print(f"- {categoria}: {puntos} puntos")
+#Anota los puntos en la planilla
 
 def anotar(dados, planilla):
     while True:
@@ -134,15 +155,19 @@ def anotar(dados, planilla):
         puntos = sum(d for d in dados if d == numero)
     planilla[categoria] = puntos
     print(f"Anotaste {puntos} puntos en la categoría '{categoria}'.")
+#El jugador elige la categoría donde anotar, se verifican las condiciones y se anotan los puntos en la planilla (aca hice algo raro pq hay dos funciones que anotan en planilla pero creo que
+# esta funcionando bien).
 
 def mostrar_planilla(planilla):
+    print("\n-------------------------")
     print("\nPLANILLA DE PUNTUACIONES")
     for categoria, puntos in planilla.items():
         estado = puntos if puntos is not None else "Sin anotar"
         print(f"- {categoria}: {estado} puntos")
+    print("\n-------------------------\n")
+#Muestra la planilla de puntuaciones actualizada.
 
 def jugar():
-    # Reiniciar planilla cada vez que se juega
     for i in planilla:
         planilla[i] = None
     while None in planilla.values():
