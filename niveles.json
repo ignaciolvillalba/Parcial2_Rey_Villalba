@@ -1,0 +1,29 @@
+{
+  "simbolos": {
+    "1": "Palo",
+    "2": "Bocha",
+    "3": "Arco",
+    "4": "Jugador",
+    "5": "Cancha",
+    "6": "Arquero"
+  },
+  "categorias": [
+    "Unos",
+    "Doses",
+    "Treses",
+    "Cuatros",
+    "Cincos",
+    "Seises",
+    "Escalera",
+    "Full",
+    "Poker",
+    "Generala"
+  ],
+   "jugadas_especiales": {
+    "Escalera": 20,
+    "Full": 30,
+    "Poker": 40,
+    "Generala": 50,
+    "GeneralaServida": 100
+  }
+}
