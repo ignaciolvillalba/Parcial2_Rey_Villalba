@@ -1,28 +1,39 @@
 import json
-import csv
 import os
 
-# Carpeta donde está main.py
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ruta_json="niveles.json"
+ruta_csv="puntajes.csv"
 
-def cargar_nivel(ruta="niveles.json"):
-    ruta_completa = os.path.join(BASE_DIR, ruta)
-    with open(ruta_completa, "r", encoding="utf-8") as f:
+def cargar_nivel(ruta_json):
+    with open(ruta_json, "r", encoding="utf-8") as f:
         return json.load(f)
 
 def guardar_puntaje(nombre, puntos, ruta="puntajes.csv"):
-    ruta_completa = os.path.join(BASE_DIR, ruta)
-    with open(ruta_completa, "a", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow([nombre, puntos])
+    with open(ruta, "a", encoding="utf-8") as f:
+        f.write(f"{nombre},{puntos}\n")
 
 def leer_estadisticas(ruta="puntajes.csv"):
-    ruta_completa = os.path.join(BASE_DIR, ruta)
-    if not os.path.exists(ruta_completa):
-        return []  # si no existe todavía, devolvemos lista vacía
-    with open(ruta_completa, "r", encoding="utf-8") as f:
-        reader = csv.reader(f)
-        puntajes = [(fila[0], int(fila[1])) for fila in reader]
+    if not os.path.exists(ruta):
+        return []
+    puntajes = []
+    with open(ruta, "r", encoding="utf-8") as archivo:
+        for linea in archivo:
+            nombre = ""
+            puntos_texto = ""
+            coma_encontrada = False
+            for c in linea:
+                if c == "," and not coma_encontrada:
+                    coma_encontrada = True
+                elif not coma_encontrada:
+                    if c != '"':  # ignoramos comillas
+                        nombre += c
+                else:
+                    if c != "\n":
+                        puntos_texto += c
+            if puntos_texto.isdigit():
+                puntos = int(puntos_texto)
+                puntajes.append((nombre, puntos))
+
     puntajes.sort(key=lambda x: x[1], reverse=True)
     return puntajes[:10]
 
