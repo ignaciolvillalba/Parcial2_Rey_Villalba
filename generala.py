@@ -49,7 +49,7 @@ def seleccionar_dados_a_conservar():
         numero_actual = ""
         valido = True
         for n in eleccion:
-            if n.isdigit():
+            if n in "12345":
                 numero_actual += n
             elif n == ",":
                 if numero_actual:
@@ -149,20 +149,22 @@ def anotar_jugada(dados, tiro, planilla):
     # --- Validación robusta de entrada ---
     while True:
         eleccion = input("\nIngrese el número de la categoría en la que desea anotar: ").strip()
-
         if eleccion == "":
             print("Debe ingresar un número. Intente nuevamente.")
             continue
-        if not eleccion.isdigit():
-            print("Debe ingresar un número válido.")
-            continue
-
+        es_digito = True
+        for n in eleccion:
+            if n not in "0123456789":
+                es_digito = False
+                break
+            if not es_digito:
+                print("Ingrese un número válido.")
+                continue
         opcion = int(eleccion)
         if opcion in posibles:
             break
         else:
-            print("Número inválido o categoría ya anotada. Intente nuevamente.")
-
+            print("Opción no válida. Intente nuevamente.")
     categoria, puntos = posibles[opcion]
     planilla[categoria] = puntos
     print(f"Anotaste {puntos} puntos en '{categoria}'.")
@@ -200,11 +202,11 @@ def jugar():
 def mostrar_creditos():
     print("################################")
     print("Generala Tematica ")
-    print("################################\n")
+    print("#######################################################")
     print("Autor/es: Mateo Rey, Ignacio Villalba")
     print("Fecha: Noviembre 2025")
     print("Materia: Programacion I")
     print("Docente: Prof. Martín Alejandro García")
     print("Carrera: Tecnicatura Universitaria en Programación")
     print("Mail de contacto:  - ignacioezequielvillalba1@gmail.com")
-    print("################################\n")
+    print("#######################################################\n")

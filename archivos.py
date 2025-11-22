@@ -30,7 +30,7 @@ def leer_estadisticas(ruta="puntajes.csv"):
                 else:
                     if c != "\n":
                         puntos_texto += c
-            if puntos_texto.isdigit():
+            if puntos_texto in str(range(0, 1000000)):
                 puntos = int(puntos_texto)
                 puntajes.append((nombre, puntos))
 
