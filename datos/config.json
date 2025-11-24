@@ -1,0 +1,21 @@
+{
+  "config": {
+    "ventana": {
+      "ancho": 1920,
+      "alto": 1080,
+      "titulo": "Generala Temática"
+    },
+    "audio": {
+      "volumen": 0.7
+    },
+    "colores": {
+      "fondo": [0, 0, 0],
+      "primario": [0, 0, 180],
+      "secundario": [0, 180, 0],
+      "texto_claro": [255, 255, 255],
+      "texto_oscuro": [0, 0, 0],
+      "gris": [50, 50, 50],
+      "gris_claro": [200, 200, 200]
+    }
+  }
+}
