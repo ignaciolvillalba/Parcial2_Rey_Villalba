@@ -2,22 +2,17 @@ import pygame
 from datos.constantes import ANCHO, COLOR_TEXTO_OSCURO, COLOR_SECUNDARIO, COLOR_TEXTO_CLARO
 from .render_elementos import logo_juego, fondo_menu, crear_boton_rect
 
-# --------------------------
-# Pantalla principal (menú)
-# --------------------------
+
 def pantalla_principal(pantalla):
     logo = logo_juego()
     fondo = fondo_menu()
     
-    # Medidas del logo
     ancho_logo = logo.get_width()
     alto_logo = logo.get_height()
 
-    # Posición centrada arriba
     x_logo = (ANCHO - ancho_logo) // 2
     y_logo = 10
 
-    # Botones
     etiquetas = ["Jugar", "Opciones", "Créditos", "Estadísticas", "Salir"]
     claves = ["jugar", "opciones", "creditos", "estadisticas", "salir"]
 
@@ -47,9 +42,6 @@ def pantalla_principal(pantalla):
 
     return botones
 
-# --------------------------
-# Pantalla de opciones
-# --------------------------
 def pantalla_opciones(pantalla):
     pantalla.fill((40, 40, 40))
     fuente = pygame.font.Font(None, 70)
