@@ -13,6 +13,26 @@ jugadas_especiales = config["jugadas_especiales"]
 planilla = {cat: None for cat in categorias}
 
 # Utilidades
+def turno_jugador():
+    dados = tirar_dados()
+    for tiro in range(1, 4):
+        print(f"\n<<< TIRO {tiro} de 3 >>>")
+        mostrar_encabezado(planilla)
+        mostrar_dados(dados)
+
+        if tiro < 3:
+            conservar = seleccionar_dados_a_conservar()
+            if len(conservar) < 5:
+                nuevos = tirar_dados(5 - len(conservar))
+                dados_nuevos = []
+                for i in range(5):
+                    if (i+1) in conservar:   # posiciones 1–5
+                        dados_nuevos.append(dados[i])
+                    else:
+                        dados_nuevos.append(nuevos.pop(0))
+                dados = dados_nuevos
+    return dados, tiro
+
 def tirar_dados(cantidad=5):
     return [random.randint(1, 6) for _ in range(cantidad)]
 
@@ -71,13 +91,18 @@ def seleccionar_dados_a_conservar():
         if valido:
             return numeros
         else:
-            print("Intente nuevamente.\n")
+            print("Intente nuevamente.\n") #a chequear
 
 # Jugadas especiales
 def es_escalera(dados):
     ordenados = copy.deepcopy(dados)
     ordenados.sort()
-    return ordenados == [1,2,3,4,5] or ordenados == [2,3,4,5,6]
+    if ordenados == [1, 2, 3, 4, 5]:
+        return True
+    elif ordenados == [2, 3, 4, 5, 6]:
+        return True
+    else:
+        return False
 
 def es_full(dados):
     ordenados = copy.deepcopy(dados)
@@ -105,27 +130,6 @@ def es_generala(dados):
         if d != dado:
             return False
     return True
-
-# Turno del jugador
-def turno_jugador():
-    dados = tirar_dados()
-    for tiro in range(1, 4):
-        print(f"\n<<< TIRO {tiro} de 3 >>>")
-        mostrar_encabezado(planilla)
-        mostrar_dados(dados)
-
-        if tiro < 3:
-            conservar = seleccionar_dados_a_conservar()
-            if len(conservar) < 5:
-                nuevos = tirar_dados(5 - len(conservar))
-                dados_nuevos = []
-                for i in range(5):
-                    if (i+1) in conservar:   # posiciones 1–5
-                        dados_nuevos.append(dados[i])
-                    else:
-                        dados_nuevos.append(nuevos.pop(0))
-                dados = dados_nuevos
-    return dados, tiro
 
 #  Anotar 
 def anotar_jugada(dados, tiro, planilla):
@@ -195,7 +199,7 @@ def jugar():
     while None in planilla.values():
         dados, tiro = turno_jugador()
         if es_generala(dados) and tiro == 1:
-            print("\n¡¡GENERALA SERVIDA!! Ganaste automáticamente con 100 puntos.")
+            print("\n¡¡GENERALA SERVIDA!! Ganaste automáticamente con 100 puntos.") #a chequear
             planilla["Generala"] = jugadas_especiales["GeneralaServida"]
             break
         anotar_jugada(dados, tiro, planilla)
@@ -216,5 +220,5 @@ def mostrar_creditos():
     print("Materia: Programacion I")
     print("Docente: Prof. Martín Alejandro García")
     print("Carrera: Tecnicatura Universitaria en Programación")
-    print("Mail de contacto:  - ignacioezequielvillalba1@gmail.com")
+    print("Mail de contacto: reym1414@gmail.com  - ignacioezequielvillalba1@gmail.com")
     print("#######################################################\n")
