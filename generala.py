@@ -4,17 +4,25 @@ from archivos import cargar_nivel, guardar_puntaje
 
 # Cargar configuración desde JSON
 config = cargar_nivel("niveles.json")
-
-simbolos = {int(k): v for k, v in config["simbolos"].items()}
+simbolos = {}
+for key, value in config["simbolos"].items():
+    simbolos[int(key)] = value
 categorias = config["categorias"]
 jugadas_especiales = config["jugadas_especiales"]
 
 # Planilla inicial
 planilla = {cat: None for cat in categorias}
+dados=[]
 
 # Utilidades
+def tirar_dados(cantidad=5):
+    dados = []
+    for i in range(cantidad):
+        dados.append(random.randint(1, 6))
+    return dados
+
 def turno_jugador():
-    dados = tirar_dados()
+    dados = tirar_dados(5)
     for tiro in range(1, 4):
         print(f"\n<<< TIRO {tiro} de 3 >>>")
         mostrar_encabezado(planilla)
@@ -33,11 +41,11 @@ def turno_jugador():
                 dados = dados_nuevos
     return dados, tiro
 
-def tirar_dados(cantidad=5):
-    return [random.randint(1, 6) for _ in range(cantidad)]
-
 def mostrar_encabezado(planilla):
-    total = sum(p for p in planilla.values() if p is not None)
+    total = 0
+    for puntos in planilla.values():
+        if puntos is not None:
+            total += puntos
     print("\n==============================")
     print(f"PUNTAJE ACUMULADO: {total}")
     print("==============================")
@@ -65,33 +73,28 @@ def seleccionar_dados_a_conservar():
             return []
         if eleccion == "9":
             return [1, 2, 3, 4, 5]
+        partes = eleccion.split(",")
         numeros = []
-        numero_actual = ""
         valido = True
-        for n in eleccion:
-            if n in "12345":
-                numero_actual += n
-            elif n == ",":
-                if numero_actual:
-                    valor = int(numero_actual)
-                    if 1 <= valor <= 5:
-                        numeros.append(valor)
-                    else:
-                        print(f"El número {valor} no es válido. Solo se permiten 1 a 5.")
-                        valido = False
-                        break
-                    numero_actual = ""
-        if numero_actual:
-            valor = int(numero_actual)
-            if 1 <= valor <= 5:
-                numeros.append(valor)
-            else:
-                print(f"El número {valor} no es válido. Solo se permiten 1 a 5.")
-                valido = False
+        for p in partes:
+            p = p.strip()
+            for i in p:
+                if i not in "0123456789":
+                    valido = False
+                    break
+            if not valido:
+                break
+            if p != "":
+                n = int(p)
+                if 1 <= n <= 5:
+                    numeros.append(n)
+                else:
+                    valido = False
+                    break
         if valido:
             return numeros
         else:
-            print("Intente nuevamente.\n") #a chequear
+            print("Entrada inválida. Solo se permiten números entre 1 y 5.\n")
 
 # Jugadas especiales
 def es_escalera(dados):
@@ -134,44 +137,58 @@ def es_generala(dados):
 #  Anotar 
 def anotar_jugada(dados, tiro, planilla):
     print("\nOpciones disponibles para anotar:")
-    categorias = list(planilla.keys())
     posibles = {}
-
-    for i, categoria in enumerate(categorias, start=1):
-        if planilla[categoria] is not None:
+    for i, (categoria, valor) in enumerate(planilla.items(), start=1):
+        if valor is not None:
             continue
         if categoria == "Escalera":
-            puntos = jugadas_especiales["Escalera"] if es_escalera(dados) else 0
+            puntos = 0
+            if es_escalera(dados):
+                puntos = jugadas_especiales["Escalera"]
+            else:
+                puntos = 0
         elif categoria == "Full":
-            puntos = jugadas_especiales["Full"] if es_full(dados) else 0
+            puntos = 0
+            if es_full(dados):
+                puntos = jugadas_especiales["Full"]
+            else:
+                puntos = 0
         elif categoria == "Poker":
-            puntos = jugadas_especiales["Poker"] if es_poker(dados) else 0
+            puntos = 0
+            if es_poker(dados):
+                puntos = jugadas_especiales["Poker"]
+            else:
+                puntos = 0
         elif categoria == "Generala":
             if es_generala(dados):
-                puntos = jugadas_especiales["GeneralaServida"] if tiro == 1 else jugadas_especiales["Generala"]
+                puntos = 0
+                if tiro == 1:
+                    puntos = jugadas_especiales["Generala Servida"]
+                else:
+                    puntos = jugadas_especiales["Generala"]
             else:
                 puntos = 0
         else:
-            # categorías numéricas
-            numero = categorias.index(categoria) + 1
-            puntos = sum(d for d in dados if d == numero)
+            numero = i
+            puntos = 0
+            for d in dados:
+                if d == numero:
+                    puntos += d
         posibles[i] = (categoria, puntos)
         print(f"[{i}] {categoria}: {puntos} puntos")
-
-    #  Validación robusta de entrada 
     while True:
         eleccion = input("\nIngrese el número de la categoría en la que desea anotar: ").strip()
         if eleccion == "":
             print("Debe ingresar un número. Intente nuevamente.")
             continue
-        es_digito = True
-        for n in eleccion:
-            if n not in "0123456789":
-                es_digito = False
+        es_numero = True
+        for i in eleccion:
+            if i not in "0123456789":
+                es_numero = False
                 break
-            if not es_digito:
-                print("Ingrese un número válido.")
-                continue
+        if not es_numero:
+            print("Ingrese un número válido.")
+            continue
         opcion = int(eleccion)
         if opcion in posibles:
             break
@@ -186,9 +203,14 @@ def mostrar_planilla(planilla):
     print("\n-------------------------")
     print("PLANILLA DE PUNTUACIONES")
     for categoria, puntos in planilla.items():
-        estado = puntos if puntos is not None else "Sin anotar"
+        estado = puntos
+        if estado is None:
+            estado = "sin anotar"
         print(f"- {categoria}: {estado}")
-    total = sum(p for p in planilla.values() if p is not None)
+    total = 0
+    for puntos in planilla.values():
+        if puntos is not None:
+            total += puntos
     print(f"PUNTAJE TOTAL: {total}")
     print("-------------------------\n")
 
