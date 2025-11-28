@@ -20,7 +20,6 @@ def tirar_dados(cantidad=5):
     for i in range(cantidad):
         dados.append(random.randint(1, 6))
     return dados
-
 def turno_jugador():
     dados = tirar_dados(5)
     for tiro in range(1, 4):
@@ -219,28 +218,29 @@ def jugar():
     for i in planilla:
         planilla[i] = None
     while None in planilla.values():
-        dados, tiro = turno_jugador()
+        dados, tiro = turno_jugador() 
         if es_generala(dados) and tiro == 1:
             print("\n¡¡GENERALA SERVIDA!! Ganaste automáticamente con 100 puntos.") #a chequear
-            planilla["Generala"] = jugadas_especiales["GeneralaServida"]
+            planilla["Generala"] = jugadas_especiales["Generala Servida"]
             break
         anotar_jugada(dados, tiro, planilla)
-        mostrar_planilla(planilla)
     print("\n¡Juego terminado!")
     mostrar_planilla(planilla)
-    # Guardar puntaje en CSV
     nombre = input("Ingrese su nombre para guardar el puntaje: ")
-    total = sum(p for p in planilla.values() if p is not None)
+    total = 0
+    for puntos in planilla.values():
+        if puntos is not None:
+            total += puntos
     guardar_puntaje(nombre, total)
 
 def mostrar_creditos():
-    print("################################")
+    print("##########################################################################")
     print("Generala Tematica ")
-    print("#######################################################")
+    print("##########################################################################")
     print("Autor/es: Mateo Rey, Ignacio Villalba")
     print("Fecha: Noviembre 2025")
     print("Materia: Programacion I")
     print("Docente: Prof. Martín Alejandro García")
     print("Carrera: Tecnicatura Universitaria en Programación")
     print("Mail de contacto: reym1414@gmail.com  - ignacioezequielvillalba1@gmail.com")
-    print("#######################################################\n")
+    print("##########################################################################\n")
