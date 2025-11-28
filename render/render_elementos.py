@@ -84,8 +84,7 @@ def render_juego(pantalla, valores_dados, dados_bloqueados, boton_tirada, tirada
         )
 
 def render_menu_jugadas(pantalla, categorias_disponibles):
-    # Dibujar overlay directamente con fill usando RGBA
-    pantalla.fill((0, 0, 0, 180))  # negro con alpha 180
+    pantalla.fill((0, 0, 0)) 
 
     subt = pygame.font.Font(None, 42).render(
         "Elegí una categoría para anotar", True, COLOR_TEXTO_CLARO
@@ -98,7 +97,6 @@ def render_menu_jugadas(pantalla, categorias_disponibles):
     ESPACIO_X, ESPACIO_Y = 20, 16
 
     total_cols = col
-    total_rows = (len(categorias_disponibles) + col - 1) // col
     grid_w = total_cols * ANCHO_BOTON + (total_cols - 1) * ESPACIO_X
     inicio_x = (ANCHO - grid_w) // 2
     inicio_y = 180

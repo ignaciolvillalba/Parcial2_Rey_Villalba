@@ -2,7 +2,7 @@ import random
 import copy
 from archivos import cargar_nivel, guardar_puntaje
 
-# === Cargar configuración desde JSON ===
+# Cargar configuración desde JSON
 config = cargar_nivel("niveles.json")
 
 simbolos = {int(k): v for k, v in config["simbolos"].items()}
@@ -12,7 +12,7 @@ jugadas_especiales = config["jugadas_especiales"]
 # Planilla inicial
 planilla = {cat: None for cat in categorias}
 
-# --- Utilidades ---
+# Utilidades
 def tirar_dados(cantidad=5):
     return [random.randint(1, 6) for _ in range(cantidad)]
 
@@ -37,7 +37,7 @@ def mostrar_dados(dados):
         print(f"{d}", end=" | ")
     print("\n")
 
-# --- Selección de dados ---
+# Selección de dados
 def seleccionar_dados_a_conservar():
     while True:
         eleccion = input("Ingrese las posiciones de los dados a conservar (ej: 1,3,5), 9 para conservar todos, o ENTER para ninguno: ").strip()
@@ -73,7 +73,7 @@ def seleccionar_dados_a_conservar():
         else:
             print("Intente nuevamente.\n")
 
-# --- Jugadas especiales ---
+# Jugadas especiales
 def es_escalera(dados):
     ordenados = copy.deepcopy(dados)
     ordenados.sort()
@@ -82,14 +82,22 @@ def es_escalera(dados):
 def es_full(dados):
     ordenados = copy.deepcopy(dados)
     ordenados.sort()
-    return (ordenados[0]==ordenados[1]==ordenados[2] and ordenados[3]==ordenados[4]) or \
-           (ordenados[0]==ordenados[1] and ordenados[2]==ordenados[3]==ordenados[4])
+    if ordenados[0] == ordenados[1] == ordenados[2] and ordenados[3] == ordenados[4]:
+        return True
+    elif ordenados[0] == ordenados[1] and ordenados[2] == ordenados[3] == ordenados[4]:
+        return True
+    else:
+        return False
 
 def es_poker(dados):
     ordenados = copy.deepcopy(dados)
     ordenados.sort()
-    return (ordenados[0]==ordenados[1]==ordenados[2]==ordenados[3]) or \
-           (ordenados[1]==ordenados[2]==ordenados[3]==ordenados[4])
+    if ordenados[0] == ordenados[1] == ordenados[2] == ordenados[3]:
+        return True
+    elif ordenados[1] == ordenados[2] == ordenados[3] == ordenados[4]:
+        return True
+    else:
+        return False
 
 def es_generala(dados):
     dado = dados[0]
@@ -98,7 +106,7 @@ def es_generala(dados):
             return False
     return True
 
-# --- Turno del jugador ---
+# Turno del jugador
 def turno_jugador():
     dados = tirar_dados()
     for tiro in range(1, 4):
@@ -119,7 +127,7 @@ def turno_jugador():
                 dados = dados_nuevos
     return dados, tiro
 
-# --- Anotar ---
+#  Anotar 
 def anotar_jugada(dados, tiro, planilla):
     print("\nOpciones disponibles para anotar:")
     categorias = list(planilla.keys())
@@ -146,7 +154,7 @@ def anotar_jugada(dados, tiro, planilla):
         posibles[i] = (categoria, puntos)
         print(f"[{i}] {categoria}: {puntos} puntos")
 
-    # --- Validación robusta de entrada ---
+    #  Validación robusta de entrada 
     while True:
         eleccion = input("\nIngrese el número de la categoría en la que desea anotar: ").strip()
         if eleccion == "":
@@ -180,7 +188,7 @@ def mostrar_planilla(planilla):
     print(f"PUNTAJE TOTAL: {total}")
     print("-------------------------\n")
 
-# --- Juego completo ---
+#  Juego completo 
 def jugar():
     for i in planilla:
         planilla[i] = None
