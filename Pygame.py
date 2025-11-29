@@ -5,7 +5,7 @@ from audio import gestor_audio
 from render import render_pantalla
 import archivos
 import generala
-from render.render_elementos import render_juego, render_planilla_calculos
+from render.render_elementos import render_juego, render_planilla_calculos, render_creditos
 
 pygame.init()
 pantalla = pygame.display.set_mode((constantes.ANCHO, constantes.ALTO))
@@ -65,7 +65,6 @@ while True:
             )
 
         elif pantalla_actual == "creditos":
-            from render.render_elementos import render_creditos
             render_creditos(pantalla, None, fuente_small)
             botones = [{"accion": "volver", "rect": pygame.Rect(constantes.ANCHO-200, constantes.ALTO-80, 160, 40)}]
             pantalla_actual, tiradas_realizadas, dados_bloqueados = gestionar_eventos(

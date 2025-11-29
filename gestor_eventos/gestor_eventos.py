@@ -1,5 +1,6 @@
 import pygame
 import generala
+from render.render_elementos import render_creditos
 from audio.gestor_audio import cargar_efecto, reproducir_efecto, EFECTO_CLICK
 
 def gestionar_eventos(evento, pantalla_actual, botones, tiradas_realizadas, botones_anotar,posibles, dados_bloqueados):
@@ -53,5 +54,7 @@ def gestionar_eventos(evento, pantalla_actual, botones, tiradas_realizadas, boto
                 elif pantalla_actual == "creditos":
                     if accion == "volver":
                         return "menu", tiradas_realizadas, dados_bloqueados
+                    elif accion == "creditos":
+                        return render_creditos
 
     return pantalla_actual, tiradas_realizadas, dados_bloqueados

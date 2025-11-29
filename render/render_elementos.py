@@ -114,3 +114,31 @@ def render_planilla_calculos(pantalla, posibles, x, y, tiradas_realizadas):
             botones_anotar[categoria] = rect_anotar
 
     return botones_anotar
+
+
+def render_creditos(pantalla, textos):
+    textos = [
+        "CREDITOS",
+        "GENERALA TEMATICA"
+        "",
+        "Autor/es: Mateo Rey, Ignacio Villalba",
+        "Fecha: Noviembre 2025",
+        "Materia: Programacion I",
+        "Docente: Prof. Martín Alejandro García - Prof. Verónica Natalia Carbonari",
+        "Carrera: Tecnicatura Universitaria en Programación",
+        "Mail de contacto: reym1414@gmail.com  - ignacioezequielvillalba1@gmail.com"
+        "",
+    ]
+
+    pantalla.fill((0, 0, 0))
+
+
+    # Espera a interacción del usuario
+    esperando = True
+    while esperando:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if evento.type in (pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
+                esperando = False
