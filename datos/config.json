@@ -16,6 +16,11 @@
       "texto_oscuro": [0, 0, 0],
       "gris": [50, 50, 50],
       "gris_claro": [200, 200, 200]
+    },
+    "fuente": {
+      "nombre": "Arial",
+      "tamaño_grande": 36,
+      "tamaño_chico": 24
     }
   }
 }

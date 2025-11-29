@@ -1,11 +1,11 @@
 import pygame, sys
 from datos import constantes
-from gestor_eventos import gestor_eventos
+from gestor_eventos.gestor_eventos import gestionar_eventos
 from audio import gestor_audio
 from render import render_pantalla
 import archivos
 import generala
-from render.render_elementos import render_juego, render_menu_jugadas
+from render.render_elementos import render_juego, render_planilla_calculos
 
 pygame.init()
 pantalla = pygame.display.set_mode((constantes.ANCHO, constantes.ALTO))
@@ -20,7 +20,8 @@ valores_dados = [1, 2, 3, 4, 5]
 dados_bloqueados = [False] * 5
 tiradas_realizadas = 0
 mostrar_menu_jugadas = False
-botones_jugadas = {}
+botones_anotar = {}
+posibles = {}
 
 # Layout de dados y candados
 DADO_W, DADO_H = 120, 120
@@ -41,39 +42,54 @@ while True:
             pygame.quit()
             sys.exit()
 
+        # Pantallas principales
         if pantalla_actual == "menu":
             botones = render_pantalla.pantalla_principal(pantalla)
-            pantalla_actual = gestor_eventos.gestionar_eventos(evento, pantalla_actual, botones)
+            pantalla_actual, tiradas_realizadas, dados_bloqueados = gestionar_eventos(
+                evento, pantalla_actual, botones, tiradas_realizadas, botones_anotar, posibles, dados_bloqueados
+            )
 
         elif pantalla_actual == "opciones":
             botones = render_pantalla.pantalla_opciones(pantalla)
-            pantalla_actual = gestor_eventos.gestionar_eventos(evento, pantalla_actual, botones)
+            pantalla_actual, tiradas_realizadas, dados_bloqueados = gestionar_eventos(
+                evento, pantalla_actual, botones, tiradas_realizadas, botones_anotar, posibles, dados_bloqueados
+            )
 
         elif pantalla_actual == "estadisticas":
             registros = archivos.leer_estadisticas()
-            from render_elementos import render_estadisticas
+            from render.render_elementos import render_estadisticas
             render_estadisticas(pantalla, None, fuente, fuente_small, registros)
             botones = [{"accion": "volver", "rect": pygame.Rect(constantes.ANCHO-200, constantes.ALTO-80, 160, 40)}]
-            pantalla_actual = gestor_eventos.gestionar_eventos(evento, pantalla_actual, botones)
-
-        elif pantalla_actual == "creditos":
-            from render_elementos import render_creditos
-            render_creditos(pantalla, None, fuente_small)
-            botones = [{"accion": "volver", "rect": pygame.Rect(constantes.ANCHO-200, constantes.ALTO-80, 160, 40)}]
-            pantalla_actual = gestor_eventos.gestionar_eventos(evento, pantalla_actual, botones)
-
-        elif pantalla_actual == "jugar":
-            render_juego(pantalla, valores_dados, dados_bloqueados, boton_tirada, tiradas_realizadas, mostrar_menu_jugadas, x_inicial, y_inicial, ESPACIO, DADO_W, DADO_H, CANDADO_H, CANDADO_OFFSET_X, CANDADO_OFFSET_Y
+            pantalla_actual, tiradas_realizadas, dados_bloqueados = gestionar_eventos(
+                evento, pantalla_actual, botones, tiradas_realizadas, botones_anotar, posibles, dados_bloqueados
             )
 
-            if mostrar_menu_jugadas:
-                categorias_disponibles = [c for c, p in generala.planilla.items() if p is None]
-                botones_jugadas = render_menu_jugadas(pantalla, categorias_disponibles)
+        elif pantalla_actual == "creditos":
+            from render.render_elementos import render_creditos
+            render_creditos(pantalla, None, fuente_small)
+            botones = [{"accion": "volver", "rect": pygame.Rect(constantes.ANCHO-200, constantes.ALTO-80, 160, 40)}]
+            pantalla_actual, tiradas_realizadas, dados_bloqueados = gestionar_eventos(
+                evento, pantalla_actual, botones, tiradas_realizadas, botones_anotar, posibles, dados_bloqueados
+            )
 
+        elif pantalla_actual == "jugar":
+            # Render del juego
+            render_juego(
+                pantalla, valores_dados, dados_bloqueados, boton_tirada,
+                tiradas_realizadas, mostrar_menu_jugadas,
+                x_inicial, y_inicial, ESPACIO, DADO_W, DADO_H,
+                CANDADO_H, CANDADO_OFFSET_X, CANDADO_OFFSET_Y
+            )
 
+            # Calcular posibles puntos y renderizar planilla con botones de anotar
+            posibles = generala.calcular_puntos_posibles(valores_dados, tiradas_realizadas, generala.planilla)
+            botones_anotar = render_planilla_calculos(pantalla, posibles, 960, 50, tiradas_realizadas)
+
+            # Eventos de clic
             if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
                 pos = evento.pos
 
+                # Botón tirar dados
                 if boton_tirada.collidepoint(pos) and tiradas_realizadas < 3 and not mostrar_menu_jugadas:
                     nuevos = generala.tirar_dados(5)
                     for i in range(5):
@@ -83,6 +99,7 @@ while True:
                     if tiradas_realizadas == 3:
                         mostrar_menu_jugadas = True
 
+                # Candados
                 for i in range(5):
                     x = x_inicial + i * ESPACIO
                     y = y_inicial
@@ -94,30 +111,14 @@ while True:
                     if rect_candado.collidepoint(pos):
                         dados_bloqueados[i] = not dados_bloqueados[i]
 
-                if mostrar_menu_jugadas:
-                    for nombre, datos in botones_jugadas.items():
-                        if datos["rect"].collidepoint(pos):
-                            if nombre == "Escalera":
-                                puntos = generala.jugadas_especiales["Escalera"] if generala.es_escalera(valores_dados) else 0
-                            elif nombre == "Full":
-                                puntos = generala.jugadas_especiales["Full"] if generala.es_full(valores_dados) else 0
-                            elif nombre == "Poker":
-                                puntos = generala.jugadas_especiales["Poker"] if generala.es_poker(valores_dados) else 0
-                            elif nombre == "Generala":
-                                if generala.es_generala(valores_dados):
-                                    puntos = generala.jugadas_especiales["GeneralaServida"] if tiradas_realizadas == 1 else generala.jugadas_especiales["Generala"]
-                                else:
-                                    puntos = 0
-                            else:
-                                numero = generala.categorias.index(nombre) + 1
-                                puntos = sum(d for d in valores_dados if d == numero)
-
-                            generala.planilla[nombre] = puntos
-
+                # Botones de anotar
+                if tiradas_realizadas == 3 and botones_anotar:
+                    for categoria, rect in botones_anotar.items():
+                        if rect.collidepoint(pos):
+                            generala.planilla[categoria] = posibles[categoria]
                             tiradas_realizadas = 0
                             dados_bloqueados = [False] * 5
                             mostrar_menu_jugadas = False
-
                             if None not in generala.planilla.values():
                                 pantalla_actual = "final"
 

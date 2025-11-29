@@ -134,58 +134,38 @@ def es_generala(dados):
     return True
 
 #  Anotar 
-def anotar_jugada(dados, tiro, planilla):
-    print("\nOpciones disponibles para anotar:")
+def calcular_puntos_posibles(dados, tiro, planilla):
     posibles = {}
     for i, (categoria, valor) in enumerate(planilla.items(), start=1):
         if valor is not None:
             continue
         if categoria == "Escalera":
-            puntos = 0
-            if es_escalera(dados):
-                puntos = jugadas_especiales["Escalera"]
-            else:
-                puntos = 0
+            puntos = jugadas_especiales["Escalera"] if es_escalera(dados) else 0
         elif categoria == "Full":
-            puntos = 0
-            if es_full(dados):
-                puntos = jugadas_especiales["Full"]
-            else:
-                puntos = 0
+            puntos = jugadas_especiales["Full"] if es_full(dados) else 0
         elif categoria == "Poker":
-            puntos = 0
-            if es_poker(dados):
-                puntos = jugadas_especiales["Poker"]
-            else:
-                puntos = 0
+            puntos = jugadas_especiales["Poker"] if es_poker(dados) else 0
         elif categoria == "Generala":
             if es_generala(dados):
-                puntos = 0
-                if tiro == 1:
-                    puntos = jugadas_especiales["Generala Servida"]
-                else:
-                    puntos = jugadas_especiales["Generala"]
+                puntos = jugadas_especiales["Generala Servida"] if tiro == 1 else jugadas_especiales["Generala"]
             else:
                 puntos = 0
         else:
             numero = i
-            puntos = 0
-            for d in dados:
-                if d == numero:
-                    puntos += d
-        posibles[i] = (categoria, puntos)
+            puntos = sum(d for d in dados if d == numero)
+        posibles[categoria] = (puntos)
+    return posibles
+
+def anotar_jugada(dados, tiro, planilla):
+    posibles = calcular_puntos_posibles(dados, tiro, planilla)
+
+    print("\nOpciones disponibles para anotar:")
+    for i, (categoria, puntos) in posibles.items():
         print(f"[{i}] {categoria}: {puntos} puntos")
+
     while True:
         eleccion = input("\nIngrese el número de la categoría en la que desea anotar: ").strip()
-        if eleccion == "":
-            print("Debe ingresar un número. Intente nuevamente.")
-            continue
-        es_numero = True
-        for i in eleccion:
-            if i not in "0123456789":
-                es_numero = False
-                break
-        if not es_numero:
+        if not eleccion.isdigit():
             print("Ingrese un número válido.")
             continue
         opcion = int(eleccion)
@@ -193,6 +173,7 @@ def anotar_jugada(dados, tiro, planilla):
             break
         else:
             print("Opción no válida. Intente nuevamente.")
+
     categoria, puntos = posibles[opcion]
     planilla[categoria] = puntos
     print(f"Anotaste {puntos} puntos en '{categoria}'.")

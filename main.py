@@ -17,6 +17,6 @@ while True:
         g.mostrar_creditos()
     elif opcion == "4":
         print("Gracias por jugar. ¡Hasta luego!")
+        break
     while opcion not in ["1", "2", "3", "4"]:
         opcion = input("Opcion invalida. Seleccione una opcion: ")
-        break

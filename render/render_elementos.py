@@ -1,5 +1,10 @@
 import pygame
-from datos.constantes import ANCHO, ALTO, COLOR_TEXTO_CLARO, COLOR_TEXTO_OSCURO
+import generala
+from datos.constantes import (
+    ANCHO, ALTO,
+    COLOR_TEXTO_CLARO, COLOR_TEXTO_OSCURO,
+    FUENTE_GRANDE, FUENTE_CHICA
+)
 
 # Cargar assets UNA SOLA VEZ
 LOGO = pygame.image.load("assets/logo_juego.png")
@@ -7,6 +12,9 @@ LOGO = pygame.transform.scale(LOGO, (500, 500))
 
 FONDO = pygame.image.load("assets/fondo.jpg")
 FONDO = pygame.transform.scale(FONDO, (ANCHO, ALTO))
+
+PLANILLA = pygame.image.load("assets/planilla.jpg")
+PLANILLA = pygame.transform.scale(PLANILLA, (600, 800))
 
 DADOS_IMAGENES = {
     1: pygame.image.load("assets/dado1.png"),
@@ -19,45 +27,39 @@ DADOS_IMAGENES = {
 for i in DADOS_IMAGENES:
     DADOS_IMAGENES[i] = pygame.transform.scale(DADOS_IMAGENES[i], (120, 120))
 
-CANDADO_ABIERTO = pygame.image.load("assets/candado1.png")
-CANDADO_CERRADO = pygame.image.load("assets/candado2.png")
-CANDADO_ABIERTO = pygame.transform.scale(CANDADO_ABIERTO, (40, 40))
-CANDADO_CERRADO = pygame.transform.scale(CANDADO_CERRADO, (40, 40))
-
+# Accesos simples
 def logo_juego():
     return LOGO
 
 def fondo_menu():
     return FONDO
 
-
+# Botón rectangular con texto
 def crear_boton_rect(superficie, x, y, ancho, alto, texto, color, color_texto):
-    fuente = pygame.font.Font(None, 40)
     rectangulo = pygame.Rect(x, y, ancho, alto)
-
     pygame.draw.rect(superficie, color, rectangulo, border_radius=10)
-    texto_img = fuente.render(texto, True, color_texto)
+
+    texto_img = FUENTE_CHICA.render(texto, True, color_texto)
     texto_x = x + (ancho - texto_img.get_width()) // 2
     texto_y = y + (alto - texto_img.get_height()) // 2
-
     superficie.blit(texto_img, (texto_x, texto_y))
 
     return rectangulo
 
-def crear_boton_imagen(superficie, x, y, ancho, alto, ruta_imagen):
+# Botón con imagen
+def crear_boton_imagen(pantalla, x, y, ancho, alto, ruta_imagen):
     imagen = pygame.image.load(ruta_imagen)
     imagen = pygame.transform.scale(imagen, (ancho, alto))
     forma = imagen.get_rect(topleft=(x, y))
-    superficie.blit(imagen, forma.topleft)
+    pantalla.blit(imagen, forma.topleft)
     return forma
 
-
+# Render principal del juego
 def render_juego(pantalla, valores_dados, dados_bloqueados, boton_tirada, tiradas_realizadas, mostrar_menu_jugadas, x_inicial, y_inicial, ESPACIO, DADO_W, DADO_H, CANDADO_H, CANDADO_OFFSET_X, CANDADO_OFFSET_Y):
     pantalla.blit(FONDO, (0, 0))
 
-
     texto_turno = f"Tiro {tiradas_realizadas} de 3"
-    txt = pygame.font.Font(None, 36).render(texto_turno, True, COLOR_TEXTO_CLARO)
+    txt = FUENTE_CHICA.render(texto_turno, True, COLOR_TEXTO_CLARO)
     pantalla.blit(txt, (20, 20))
 
     for i, valor in enumerate(valores_dados):
@@ -68,48 +70,47 @@ def render_juego(pantalla, valores_dados, dados_bloqueados, boton_tirada, tirada
             pantalla.blit(DADOS_IMAGENES[valor], (x, y))
         else:
             pygame.draw.rect(pantalla, COLOR_TEXTO_OSCURO, (x, y, DADO_W, DADO_H), border_radius=8)
-            num = pygame.font.Font(None, 72).render(str(valor), True, COLOR_TEXTO_CLARO)
+            num = FUENTE_GRANDE.render(str(valor), True, COLOR_TEXTO_CLARO)
             pantalla.blit(num, num.get_rect(center=(x + DADO_W // 2, y + DADO_H // 2)))
 
-        candado_img = CANDADO_CERRADO if dados_bloqueados[i] else CANDADO_ABIERTO
-        pantalla.blit(candado_img, (x + CANDADO_OFFSET_X, y - CANDADO_H - CANDADO_OFFSET_Y))
+        ruta_candado = "assets/candado2.png" if dados_bloqueados[i] else "assets/candado1.png"
+        crear_boton_imagen(
+            pantalla,
+            x + CANDADO_OFFSET_X,
+            y - CANDADO_H - CANDADO_OFFSET_Y,
+            40,
+            40,
+            ruta_candado
+        )
 
     if tiradas_realizadas < 3 and not mostrar_menu_jugadas:
-        crear_boton_rect(
-            pantalla,
-            boton_tirada.x, boton_tirada.y,
-            boton_tirada.width, boton_tirada.height,
-            "Tirar dados",
-            COLOR_TEXTO_OSCURO, COLOR_TEXTO_CLARO
-        )
+        crear_boton_rect(pantalla, boton_tirada.x, boton_tirada.y, boton_tirada.width, boton_tirada.height, "Tirar dados", COLOR_TEXTO_OSCURO, COLOR_TEXTO_CLARO)
 
-def render_menu_jugadas(pantalla, categorias_disponibles):
-    pantalla.fill((0, 0, 0)) 
+# Render de planilla dinámica con fondo temático
+def render_planilla_calculos(pantalla, posibles, x, y, tiradas_realizadas):
+    pantalla.blit(PLANILLA, (x, y))
+    offset_y = 230
+    alto_fila = 50
 
-    subt = pygame.font.Font(None, 42).render(
-        "Elegí una categoría para anotar", True, COLOR_TEXTO_CLARO
-    )
-    pantalla.blit(subt, subt.get_rect(center=(ANCHO // 2, 120)))
+    botones_anotar = {}
 
-    botones = {}
-    col = 3
-    ANCHO_BOTON, ALTO_BOTON = 220, 50
-    ESPACIO_X, ESPACIO_Y = 20, 16
+    for i, (categoria, valor) in enumerate(generala.planilla.items()):
+        y_fila = y + offset_y + i * alto_fila
 
-    total_cols = col
-    grid_w = total_cols * ANCHO_BOTON + (total_cols - 1) * ESPACIO_X
-    inicio_x = (ANCHO - grid_w) // 2
-    inicio_y = 180
+        # Si ya está anotado en la planilla, mostrar ese valor fijo
+        if valor is not None:
+            puntos = valor
+        else:
+            puntos = posibles.get(categoria, 0)
 
-    for i, nombre in enumerate(categorias_disponibles):
-        fila = i // col
-        columna = i % col
-        x = inicio_x + columna * (ANCHO_BOTON + ESPACIO_X)
-        y = inicio_y + fila * (ALTO_BOTON + ESPACIO_Y)
-        rect = crear_boton_rect(
-            pantalla, x, y, ANCHO_BOTON, ALTO_BOTON,
-            nombre, COLOR_TEXTO_OSCURO, COLOR_TEXTO_CLARO
-        )
-        botones[nombre] = {"rect": rect}
+        txt_categoria = FUENTE_CHICA.render(str(categoria), True, COLOR_TEXTO_OSCURO)
+        txt_puntos = FUENTE_CHICA.render(str(puntos), True, COLOR_TEXTO_OSCURO)
 
-    return botones
+        pantalla.blit(txt_categoria, (x + 40, y_fila))
+        pantalla.blit(txt_puntos, (x + 300, y_fila))
+
+        if valor is None and tiradas_realizadas == 3:
+            rect_anotar = crear_boton_imagen(pantalla,x + 500,y_fila - 18,47,47,"assets/anotar.png")
+            botones_anotar[categoria] = rect_anotar
+
+    return botones_anotar
