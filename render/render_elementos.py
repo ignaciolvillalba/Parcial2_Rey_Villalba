@@ -116,23 +116,24 @@ def render_planilla_calculos(pantalla, posibles, x, y, tiradas_realizadas):
     return botones_anotar
 
 
-def render_creditos(pantalla, textos):
-    textos = [
-        "CREDITOS",
-        "GENERALA TEMATICA"
-        "",
-        "Autor/es: Mateo Rey, Ignacio Villalba",
-        "Fecha: Noviembre 2025",
-        "Materia: Programacion I",
-        "Docente: Prof. Martín Alejandro García - Prof. Verónica Natalia Carbonari",
-        "Carrera: Tecnicatura Universitaria en Programación",
-        "Mail de contacto: reym1414@gmail.com  - ignacioezequielvillalba1@gmail.com"
-        "",
-    ]
-
+def render_creditos(pantalla):
+    texto1 = FUENTE_GRANDE.render("Generala Tematica", True, COLOR_TEXTO_CLARO)
+    texto2 = FUENTE_CHICA.render("Autor/es: Mateo Rey, Ignacio Villalba", True, COLOR_TEXTO_CLARO)
+    texto3 = FUENTE_CHICA.render("Fecha: Noviembre 2025", True, COLOR_TEXTO_CLARO)
+    texto4 = FUENTE_CHICA.render("Docente: Prof. Martin Alejandro Garciá", True, COLOR_TEXTO_CLARO)
+    texto5 = FUENTE_CHICA.render("Carrera: Tecnicatura Universitaria en Programación", True, COLOR_TEXTO_CLARO)
+    texto6 = FUENTE_CHICA.render("Mail de contacto: reym1414@gmail.com  - ignacioezequielvillalba1@gmail.com", True, COLOR_TEXTO_CLARO)
+    texto7 = FUENTE_CHICA.render("Musica: Wii Party - Main Theme (Nintendo)", True, COLOR_TEXTO_CLARO)
+    texto8 = FUENTE_CHICA.render("Presione cualquier tecla para volver al menú principal.", True, COLOR_TEXTO_CLARO)
     pantalla.fill((0, 0, 0))
-
-
+    pantalla.blit(texto1, (0, 0))
+    pantalla.blit(texto2, (0, 80))
+    pantalla.blit(texto3, (0, 140))
+    pantalla.blit(texto4, (0, 200))
+    pantalla.blit(texto5, (0, 260))
+    pantalla.blit(texto6, (0, 320))
+    pantalla.blit(texto7, (0, 380))
+    pantalla.blit(texto8, (0, 500))
     # Espera a interacción del usuario
     esperando = True
     while esperando:

@@ -11,8 +11,6 @@ pygame.init()
 pantalla = pygame.display.set_mode((constantes.ANCHO, constantes.ALTO))
 pygame.display.set_caption(constantes.TITULO)
 clock = pygame.time.Clock()
-fuente = pygame.font.SysFont("Arial", 32)
-fuente_small = pygame.font.SysFont("Arial", 24)
 pantalla_actual = "menu"
 gestor_audio.reproducir_musica()
 
@@ -65,7 +63,7 @@ while True:
             )
 
         elif pantalla_actual == "creditos":
-            render_creditos(pantalla, None, fuente_small)
+            render_creditos(pantalla)
             botones = [{"accion": "volver", "rect": pygame.Rect(constantes.ANCHO-200, constantes.ALTO-80, 160, 40)}]
             pantalla_actual, tiradas_realizadas, dados_bloqueados = gestionar_eventos(
                 evento, pantalla_actual, botones, tiradas_realizadas, botones_anotar, posibles, dados_bloqueados
