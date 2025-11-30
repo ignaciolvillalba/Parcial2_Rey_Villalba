@@ -18,12 +18,20 @@ def leer_estadisticas(ruta="puntajes.csv"):
     puntajes = []
     with open(ruta, "r", encoding="utf-8") as archivo:
         for linea in archivo:
-            partes = linea.strip().split(",")
-            if len(partes) == 2:
-                nombre, puntos_texto = partes
-                if puntos_texto.isdigit():
-                    puntos = int(puntos_texto)
-                    puntajes.append((nombre, puntos))
+            linea = linea.strip()
+            if linea == "":
+                continue  # salta líneas vacías
+
+            partes = linea.split(",")
+            if len(partes) != 2:
+                continue  # ignora líneas mal formateadas
+
+            nombre = partes[0].strip()
+            puntos_texto = partes[1].strip()
+
+            if puntos_texto.isdigit():
+                puntos = int(puntos_texto)
+                puntajes.append((nombre, puntos))
     puntajes.sort(key=lambda x: x[1], reverse=True)
     return puntajes[:10]
 

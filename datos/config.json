@@ -1,12 +1,12 @@
 {
   "config": {
     "ventana": {
-      "ancho": 1920,
-      "alto": 1080,
+      "ancho": 1000,
+      "alto": 600,
       "titulo": "Generala Temática"
     },
     "audio": {
-      "volumen": 0.01
+      "volumen": 0.5
     },
     "colores": {
       "fondo": [0, 0, 0],

@@ -2,38 +2,34 @@ import random
 import copy
 from archivos import cargar_nivel, guardar_puntaje
 
-# Cargar configuración desde JSON
 config = cargar_nivel("niveles.json")
 simbolos = {}
 for key, value in config["simbolos"].items():
     simbolos[int(key)] = value
 categorias = config["categorias"]
 jugadas_especiales = config["jugadas_especiales"]
-
-# Planilla inicial
 planilla = {cat: None for cat in categorias}
-dados=[]
+dados = []
 
-# Utilidades
 def tirar_dados(cantidad=5):
     dados = []
     for i in range(cantidad):
         dados.append(random.randint(1, 6))
     return dados
+
 def turno_jugador():
     dados = tirar_dados(5)
     for tiro in range(1, 4):
-        print(f"\n<<< TIRO {tiro} de 3 >>>")
+        print("\n<<< TIRO " + str(tiro) + " de 3 >>>")
         mostrar_encabezado(planilla)
         mostrar_dados(dados)
-
         if tiro < 3:
             conservar = seleccionar_dados_a_conservar()
             if len(conservar) < 5:
                 nuevos = tirar_dados(5 - len(conservar))
                 dados_nuevos = []
                 for i in range(5):
-                    if (i+1) in conservar:   # posiciones 1–5
+                    if (i + 1) in conservar:
                         dados_nuevos.append(dados[i])
                     else:
                         dados_nuevos.append(nuevos.pop(0))
@@ -46,25 +42,24 @@ def mostrar_encabezado(planilla):
         if puntos is not None:
             total += puntos
     print("\n==============================")
-    print(f"PUNTAJE ACUMULADO: {total}")
+    print("PUNTAJE ACUMULADO: " + str(total))
     print("==============================")
 
 def mostrar_dados(dados):
     print("\nDADOS ACTUALES")
     print("Posición: ", end="")
     for i in range(len(dados)):
-        print(f"({i+1})", end=" | ")
+        print("(" + str(i + 1) + ")", end=" | ")
     print()
     print("Símbolo:  ", end="")
     for d in dados:
-        print(f"{simbolos[d]}", end=" | ")
+        print(str(simbolos[d]), end=" | ")
     print()
     print("Valor:    ", end="")
     for d in dados:
-        print(f"{d}", end=" | ")
+        print(str(d), end=" | ")
     print("\n")
 
-# Selección de dados
 def seleccionar_dados_a_conservar():
     while True:
         eleccion = input("Ingrese las posiciones de los dados a conservar (ej: 1,3,5), 9 para conservar todos, o ENTER para ninguno: ").strip()
@@ -95,7 +90,6 @@ def seleccionar_dados_a_conservar():
         else:
             print("Entrada inválida. Solo se permiten números entre 1 y 5.\n")
 
-# Jugadas especiales
 def es_escalera(dados):
     ordenados = copy.deepcopy(dados)
     ordenados.sort()
@@ -133,75 +127,90 @@ def es_generala(dados):
             return False
     return True
 
-#  Anotar 
 def calcular_puntos_posibles(dados, tiro, planilla):
     posibles = {}
     for i, (categoria, valor) in enumerate(planilla.items(), start=1):
         if valor is not None:
             continue
         if categoria == "Escalera":
-            puntos = jugadas_especiales["Escalera"] if es_escalera(dados) else 0
+            if es_escalera(dados):
+                puntos = jugadas_especiales["Escalera"]
+            else:
+                puntos = 0
         elif categoria == "Full":
-            puntos = jugadas_especiales["Full"] if es_full(dados) else 0
+            if es_full(dados):
+                puntos = jugadas_especiales["Full"]
+            else:
+                puntos = 0
         elif categoria == "Poker":
-            puntos = jugadas_especiales["Poker"] if es_poker(dados) else 0
+            if es_poker(dados):
+                puntos = jugadas_especiales["Poker"]
+            else:
+                puntos = 0
         elif categoria == "Generala":
             if es_generala(dados):
-                puntos = jugadas_especiales["Generala Servida"] if tiro == 1 else jugadas_especiales["Generala"]
+                if tiro == 1:
+                    puntos = jugadas_especiales["Generala Servida"]
+                else:
+                    puntos = jugadas_especiales["Generala"]
             else:
                 puntos = 0
         else:
             numero = i
-            puntos = sum(d for d in dados if d == numero)
-        posibles[categoria] = (puntos)
+            puntos = 0
+            for d in dados:
+                if d == numero:
+                    puntos += d
+        posibles[categoria] = puntos
     return posibles
 
 def anotar_jugada(dados, tiro, planilla):
     posibles = calcular_puntos_posibles(dados, tiro, planilla)
-
     print("\nOpciones disponibles para anotar:")
-    for i, (categoria, puntos) in posibles.items():
-        print(f"[{i}] {categoria}: {puntos} puntos")
-
+    contador = 1
+    categorias_lista = []
+    for categoria, puntos in posibles.items():
+        print("[" + str(contador) + "] " + categoria + ": " + str(puntos) + " puntos")
+        categorias_lista.append((categoria, puntos))
+        contador += 1
     while True:
         eleccion = input("\nIngrese el número de la categoría en la que desea anotar: ").strip()
         if not eleccion.isdigit():
             print("Ingrese un número válido.")
             continue
         opcion = int(eleccion)
-        if opcion in posibles:
+        if 1 <= opcion <= len(categorias_lista):
             break
         else:
             print("Opción no válida. Intente nuevamente.")
-
-    categoria, puntos = posibles[opcion]
+    categoria, puntos = categorias_lista[opcion - 1]
     planilla[categoria] = puntos
-    print(f"Anotaste {puntos} puntos en '{categoria}'.")
+    print("Anotaste " + str(puntos) + " puntos en '" + categoria + "'.")
     mostrar_encabezado(planilla)
 
 def mostrar_planilla(planilla):
     print("\n-------------------------")
     print("PLANILLA DE PUNTUACIONES")
     for categoria, puntos in planilla.items():
-        estado = puntos
-        if estado is None:
+        if puntos is None:
             estado = "sin anotar"
-        print(f"- {categoria}: {estado}")
+        else:
+            estado = str(puntos)
+        print("- " + categoria + ": " + estado)
     total = 0
     for puntos in planilla.values():
         if puntos is not None:
             total += puntos
-    print(f"PUNTAJE TOTAL: {total}")
+    print("PUNTAJE TOTAL: " + str(total))
     print("-------------------------\n")
 
-#  Juego completo 
 def jugar():
     for i in planilla:
         planilla[i] = None
     while None in planilla.values():
-        dados, tiro = turno_jugador() 
+        dados, tiro = turno_jugador()
         if es_generala(dados) and tiro == 1:
-            print("\n¡¡GENERALA SERVIDA!! Ganaste automáticamente con 100 puntos.") #a chequear
+            print("\n¡¡GENERALA SERVIDA!! Ganaste automáticamente con 100 puntos.")
             planilla["Generala"] = jugadas_especiales["Generala Servida"]
             break
         anotar_jugada(dados, tiro, planilla)
@@ -216,12 +225,12 @@ def jugar():
 
 def mostrar_creditos():
     print("##########################################################################")
-    print("Generala Tematica ")
+    print("Generala Tematica")
     print("##########################################################################")
     print("Autor/es: Mateo Rey, Ignacio Villalba")
     print("Fecha: Noviembre 2025")
     print("Materia: Programacion I")
     print("Docente: Prof. Martín Alejandro García")
     print("Carrera: Tecnicatura Universitaria en Programación")
-    print("Mail de contacto: reym1414@gmail.com  - ignacioezequielvillalba1@gmail.com")
+    print("Mail de contacto: reym1414@gmail.com - ignacioezequielvillalba1@gmail.com")
     print("##########################################################################\n")
